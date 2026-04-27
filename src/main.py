@@ -8,7 +8,8 @@ import argparse
 import sys
 import numpy as np
 import cv2
-from utils import load_image, save_image, display_results
+from thresholding import global_threshold_binarization, otsu_threshold_binarization
+from utils import display_histogram_and_stats, load_image, save_image, display_results
 
 
 def main():
@@ -26,12 +27,12 @@ def main():
     parser.add_argument("output", help="Path to save output PNG image")
 
     # Task selection argument
-    parser.add_argument("--task", type=str, required=True,
+    parser.add_argument("--thresholding", type=str, required=True,
                         choices=[
-                            "x", 
-                            "y"
+                            "global", 
+                            "otsu"
                         ],
-                        help="Select the transformation or filter to apply")
+                        help="Select the thesholding method to apply")
 
     # Optional flag to display results
     parser.add_argument("--display", action="store_true", help="Display original and processed images side-by-side")
@@ -46,17 +47,19 @@ def main():
     else:
         img = load_image(args.input, monochromatic=True)
     
-    if args.task == "x":
-        result = img
-    elif args.task == "y":
-        result = img
+    if args.thresholding == "global":
+        threshold = int(input("Enter the threshold value (0-255): "))
+        result = global_threshold_binarization(img, threshold)
+    elif args.thresholding == "otsu":
+        result,threshold  = otsu_threshold_binarization(img)
     else:
         print("Invalid task.")
         sys.exit(1)
 
     save_image(result, "output", args.output)
     if args.display:
-        display_results(img, result, title=args.task)
+        display_histogram_and_stats(img, result, threshold, args.thresholding, args.output)
+        display_results(img, result, title=args.thresholding)
     
     print("Processing completed successfully.")
     print(f"Input: {args.input}")
