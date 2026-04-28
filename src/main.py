@@ -8,7 +8,17 @@ import argparse
 import sys
 import numpy as np
 import cv2
-from thresholding import bernsen_threshold_binarization, global_threshold_binarization, niblack_threshold_binarization, otsu_threshold_binarization, sauvola_threshold_binarization
+from thresholding import (
+    bernsen_threshold_binarization, 
+    global_threshold_binarization, 
+    niblack_threshold_binarization, 
+    otsu_threshold_binarization, 
+    sauvola_threshold_binarization,
+    phansalskar_threshold_binarization,
+    mean_threshold_binarization,
+    median_threshold_binarization,
+    contrast_threshold_binarization
+)
 from utils import display_histogram_and_stats, load_image, save_image, display_results
 
 
@@ -33,7 +43,11 @@ def main():
                             "otsu",
                             "bernsen",
                             "niblack",
-                            "sauvola"
+                            "sauvola",
+                            "phansalskar",
+                            "mean",
+                            "median",
+                            "contrast"
                         ],
                         help="Select the thesholding method to apply")
 
@@ -44,6 +58,7 @@ def main():
     parser.add_argument("--colored", action="store_true", help="Load image in color mode instead of monochromatic")
 
     args = parser.parse_args()
+    threshold = None
 
     if args.colored:
         img = load_image(args.input, monochromatic=False)
@@ -58,25 +73,39 @@ def main():
     elif args.thresholding == "bernsen":
         window_size = int(input("Entre com o tamanho da janela (impar): "))
         result = bernsen_threshold_binarization(img, window_size)
-        threshold = 10
     elif args.thresholding == "niblack":
         window_size = int(input("Entre com o tamanho da janela (impar): "))
         k = float(input("Entre com o valor de k (ex: -0.2): "))
         result = niblack_threshold_binarization(img, window_size, k)
-        threshold = 10
     elif args.thresholding == "sauvola":
         window_size = int(input("Entre com o tamanho da janela (impar): "))
         k = float(input("Entre com o valor de k (ex: 0.5): "))
         r = float(input("Entre com o valor de R (ex: 128): "))
         result = sauvola_threshold_binarization(img, window_size, k, r)
-        threshold = 10
+    elif args.thresholding == "phansalskar":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        k = float(input("Entre com o valor de k (ex: 0.25): "))
+        r = float(input("Entre com o valor de R (ex: 0.5): "))
+        p = float(input("Entre com o valor de p (ex: 2.0): "))
+        q = float(input("Entre com o valor de q (ex: 10.0): "))
+        result = phansalskar_threshold_binarization(img, window_size, k, r, p, q)
+    elif args.thresholding == "mean":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        c = float(input("Entre com o valor de C (ex: 10.0): "))
+        result = mean_threshold_binarization(img, window_size, c)
+    elif args.thresholding == "median":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        result = median_threshold_binarization(img, window_size)
+    elif args.thresholding == "contrast":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        result = contrast_threshold_binarization(img, window_size)
     else:
         print("Invalid task.")
         sys.exit(1)
 
     save_image(result, "output", args.output)
     if args.display:
-        display_histogram_and_stats(img, result, threshold, args.thresholding, args.output)
+        display_histogram_and_stats(img, result, args.thresholding, threshold, args.output)
         display_results(img, result, title=args.thresholding)
     
     print("Processing completed successfully.")
@@ -84,4 +113,3 @@ def main():
     print(f"Output: {args.output}")
 if __name__ == "__main__":
     main()
-

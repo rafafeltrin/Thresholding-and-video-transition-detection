@@ -97,25 +97,39 @@ def calculate_black_pixel_fraction(binarized_img: np.ndarray) -> float:
     
     return fraction
 
-def display_histogram_and_stats(original_img: np.ndarray, binarized_img: np.ndarray, threshold_value: float, method_name: str, img_title: str = "Image"):
+def display_histogram_and_stats(
+    original_img: np.ndarray, 
+    binarized_img: np.ndarray, 
+    method_name: str, 
+    threshold_value: float = None, 
+    img_title: str = "Image"
+):
     fraction = calculate_black_pixel_fraction(binarized_img)
+    
     print(f"Método aplicado: {method_name}")
-    print(f"Calculo do limiar: {threshold_value:.2f}")
+    if threshold_value is not None:
+        print(f"Calculo do limiar: {threshold_value:.2f}")
     print(f"Fração de pixels do objeto (preto): {fraction:.4f} ({fraction * 100:.2f}%)\n")
 
-    plt.figure(figsize=(10, 6))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
     
-    plt.hist(original_img.ravel(), bins=256, range=(0, 256), color='gray', alpha=0.75, label='Frequência de Intensidade')
+    ax1.hist(original_img.ravel(), bins=256, range=(0, 256), color='gray', alpha=0.75)
+    if threshold_value is not None:
+        ax1.axvline(x=threshold_value, color='red', linestyle='--', linewidth=2, label=f'Limiar T={threshold_value:.1f}')
+        ax1.legend()
+    ax1.set_title(f'Histograma Original - {method_name}')
+    ax1.set_xlabel('Intensidade (0-255)')
+    ax1.set_ylabel('Número de pixels')
+    ax1.grid(axis='y', alpha=0.3)
     
-    plt.axvline(x=threshold_value, color='red', linestyle='--', linewidth=2, 
-                label=f'Limiar $T={threshold_value:.1f}$')
+    ax2.hist(binarized_img.ravel(), bins=256, range=(0, 256), color='black', alpha=0.75, label=f'Objeto (Preto): {fraction * 100:.2f}%')
+    ax2.set_title('Histograma Binarizado')
+    ax2.set_xlabel('Intensidade (0-255)')
+    ax2.set_ylabel('Número de pixels')
+    ax2.legend()
+    ax2.grid(axis='y', alpha=0.3)
     
-    plt.title(f'Histograma de intensidade e limiar - {method_name}')
-    plt.xlabel('Intensidade ($0-255$)')
-    plt.ylabel('Número de pixels')
-    plt.legend()
-    plt.grid(axis='y', alpha=0.3)
-    
+    plt.tight_layout()
     plt.savefig(f"output/histogram_{img_title}")
     plt.show()
     

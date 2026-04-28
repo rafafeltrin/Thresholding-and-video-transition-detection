@@ -43,7 +43,9 @@ def otsu_threshold_binarization(img: np.ndarray) -> Tuple[np.ndarray, int]:
     print(f"Otsu's threshold: {t}")
     return (result, int(t))
 
-def bernsen_threshold_binarization(img: np.ndarray, window_size: int = 91) -> np.ndarray:
+def bernsen_threshold_binarization(
+    img: np.ndarray, 
+    window_size: int = 91) -> np.ndarray:
     z_max = ndimage.maximum_filter(img, size=window_size)
     z_min = ndimage.minimum_filter(img, size=window_size)
 
@@ -57,7 +59,11 @@ def bernsen_threshold_binarization(img: np.ndarray, window_size: int = 91) -> np
     return result
 
 
-def niblack_threshold_binarization(img: np.ndarray, window_size: int = 15, k: float = -0.2) -> np.ndarray:
+def niblack_threshold_binarization(
+    img: np.ndarray, 
+    window_size: int = 15, 
+    k: float = -0.2) -> np.ndarray:
+
     img_float = img.astype(np.float64)
 
     local_mean = ndimage.uniform_filter(img_float, size=window_size)
@@ -74,7 +80,12 @@ def niblack_threshold_binarization(img: np.ndarray, window_size: int = 15, k: fl
 
     return result
 
-def sauvola_threshold_binarization(img: np.ndarray, window_size: int = 15, k: float = 0.5, R: float = 128) -> np.ndarray:
+def sauvola_threshold_binarization(
+    img: np.ndarray, 
+    window_size: int = 15, 
+    k: float = 0.5, 
+    R: float = 128) -> np.ndarray:
+
     img_float = img.astype(np.float64)
 
     local_mean = ndimage.uniform_filter(img_float, size=window_size)
@@ -89,4 +100,58 @@ def sauvola_threshold_binarization(img: np.ndarray, window_size: int = 15, k: fl
 
     result = np.where(img > t, 0, 255).astype(np.uint8)
 
+    return result
+
+
+def phansalskar_threshold_binarization(
+    img: np.ndarray, 
+    window_size: int = 15, 
+    k: float = 0.25, 
+    R: float = 0.5, 
+    p: float = 2.0, 
+    q: float = 10.0
+) -> np.ndarray:
+    img_norm = img.astype(np.float64) / 255.0
+    local_mean = ndimage.uniform_filter(img_norm, size=window_size)
+
+    local_mean_sq = ndimage.uniform_filter(img_norm ** 2, size=window_size)
+
+    local_variance = local_mean_sq - local_mean ** 2
+
+    local_std = np.sqrt(np.maximum(local_variance, 0))
+
+    t_norm = local_mean * (1 + p * np.exp(-q * local_mean) + k * ((local_std / R) - 1))
+
+    result = np.where(img_norm > t_norm, 0, 255).astype(np.uint8)
+
+    return result
+
+def mean_threshold_binarization(img: np.ndarray, window_size: int = 15, C: float = 10.0) -> np.ndarray:
+    img_float = img.astype(np.float64)
+    
+    local_mean = ndimage.uniform_filter(img_float, size=window_size)
+    
+    t = local_mean - C
+    
+    result = np.where(img > t, 0, 255).astype(np.uint8)
+    
+    return result
+
+def median_threshold_binarization(img: np.ndarray, window_size: int = 3) -> np.ndarray:
+    t = ndimage.median_filter(img, size=window_size)
+    
+    result = np.where(img > t, 0, 255).astype(np.uint8)
+    
+    return result
+
+def contrast_threshold_binarization(img: np.ndarray, window_size: int = 3) -> np.ndarray:
+    z_max = ndimage.maximum_filter(img, size=window_size).astype(np.float32)
+    z_min = ndimage.minimum_filter(img, size=window_size).astype(np.float32)
+    img_float = img.astype(np.float32)
+    
+    dist_max = z_max - img_float
+    dist_min = img_float - z_min
+    
+    result = np.where(dist_max < dist_min, 255, 0).astype(np.uint8)
+    
     return result
