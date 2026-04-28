@@ -8,7 +8,7 @@ import argparse
 import sys
 import numpy as np
 import cv2
-from thresholding import global_threshold_binarization, otsu_threshold_binarization
+from thresholding import bernsen_threshold_binarization, global_threshold_binarization, niblack_threshold_binarization, otsu_threshold_binarization, sauvola_threshold_binarization
 from utils import display_histogram_and_stats, load_image, save_image, display_results
 
 
@@ -30,7 +30,10 @@ def main():
     parser.add_argument("--thresholding", type=str, required=True,
                         choices=[
                             "global", 
-                            "otsu"
+                            "otsu",
+                            "bernsen",
+                            "niblack",
+                            "sauvola"
                         ],
                         help="Select the thesholding method to apply")
 
@@ -52,6 +55,21 @@ def main():
         result = global_threshold_binarization(img, threshold)
     elif args.thresholding == "otsu":
         result,threshold  = otsu_threshold_binarization(img)
+    elif args.thresholding == "bernsen":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        result = bernsen_threshold_binarization(img, window_size)
+        threshold = 10
+    elif args.thresholding == "niblack":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        k = float(input("Entre com o valor de k (ex: -0.2): "))
+        result = niblack_threshold_binarization(img, window_size, k)
+        threshold = 10
+    elif args.thresholding == "sauvola":
+        window_size = int(input("Entre com o tamanho da janela (impar): "))
+        k = float(input("Entre com o valor de k (ex: 0.5): "))
+        r = float(input("Entre com o valor de R (ex: 128): "))
+        result = sauvola_threshold_binarization(img, window_size, k, r)
+        threshold = 10
     else:
         print("Invalid task.")
         sys.exit(1)
