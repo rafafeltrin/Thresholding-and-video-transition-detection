@@ -19,7 +19,7 @@ from thresholding import (
     median_threshold_binarization,
     contrast_threshold_binarization
 )
-from utils import display_histogram_and_stats, load_image, save_image, display_results
+from utils import display_histogram_and_stats, load_image, save_image, display_results, display_histograms_separate, save_histogram
 
 
 def main():
@@ -47,7 +47,8 @@ def main():
                             "phansalskar",
                             "mean",
                             "median",
-                            "contrast"
+                            "contrast",
+                            "histogram"
                         ],
                         help="Select the thesholding method to apply")
 
@@ -99,13 +100,19 @@ def main():
     elif args.thresholding == "contrast":
         window_size = int(input("Entre com o tamanho da janela (impar): "))
         result = contrast_threshold_binarization(img, window_size)
+    elif args.thresholding == "histogram":
+        save_histogram(img, args.output)
+        sys.exit(0)
     else:
         print("Invalid task.")
         sys.exit(1)
 
     save_image(result, "output", args.output)
     if args.display:
-        display_histogram_and_stats(img, result, args.thresholding, threshold, args.output)
+        if threshold is not None:
+            display_histogram_and_stats(img, result, args.thresholding, threshold, args.output)
+        else:
+            display_histograms_separate(result, args.output)
         display_results(img, result, title=args.thresholding)
     
     print("Processing completed successfully.")

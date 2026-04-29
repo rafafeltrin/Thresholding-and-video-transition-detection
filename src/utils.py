@@ -130,6 +130,43 @@ def display_histogram_and_stats(
     ax2.grid(axis='y', alpha=0.3)
     
     plt.tight_layout()
-    plt.savefig(f"output/histogram_{img_title}")
+    plt.savefig(f"output/{os.path.splitext(img_title)[0]}_histogram.png")
     plt.show()
+
+def display_histograms_separate(
+    binarized_img: np.ndarray, 
+    img_title: str = "Image"
+):
+    fraction = calculate_black_pixel_fraction(binarized_img)
+    
+    print(f"Fração de pixels do objeto (preto): {fraction:.4f} ({fraction * 100:.2f}%)\n")
+    
+    plt.figure(figsize=(10, 5))
+    plt.hist(binarized_img.ravel(), bins=256, range=(0, 256), color='black', alpha=0.75, label=f'Objeto (Preto): {fraction * 100:.2f}%')
+    plt.title('Histograma Binarizado')
+    plt.xlabel('Intensidade (0-255)')
+    plt.ylabel('Número de pixels')
+    plt.legend()
+    plt.grid(axis='y', alpha=0.3)
+    plt.tight_layout()
+    
+    title_base = os.path.splitext(img_title)[0]
+    plt.savefig(f"output/{title_base}_histogram.png")
+    plt.show()
+
+def save_histogram(
+    img: np.ndarray, 
+    img_title: str = "Image"
+):
+    plt.figure(figsize=(10, 5))
+    plt.hist(img.ravel(), bins=256, range=(0, 256), color='gray', alpha=0.75)
+    plt.title('Histograma')
+    plt.xlabel('Intensidade (0-255)')
+    plt.ylabel('Número de pixels')
+    plt.grid(axis='y', alpha=0.3)
+    plt.tight_layout()
+    
+    title_base = os.path.splitext(img_title)[0]
+    plt.savefig(f"output/{title_base}_histogram.png")
+    plt.close()
     
